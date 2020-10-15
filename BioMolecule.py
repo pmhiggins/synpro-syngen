@@ -9,7 +9,7 @@ this_dir = os.path.dirname(__file__)
 class BioMolecule:
     """
 
-    class for storing amino acid properties, or any other useful biological molecule really
+    Simplified version of BioMolecule from NutMEG's synthesis submodule
 
     """
     name = ''
@@ -17,58 +17,46 @@ class BioMolecule:
     conc_mol_per_l = None	# mol/l
     conc_mol_per_cell = None # mol/cell
 
-    gamma = 1.		# activity coefficient
+    std_formation_gibbs = None # kJ/mol
+    std_formation_R = None #kJ/mol
 
-    std_formation_gibbs = None		# J/mol
-    std_formation_R = None #J/mol
+    stdbio_formation_gibbs = None # (biological standard) kJ/mol
+    stdbio_formation_R = None # (biological standard) kJ/mol
 
-    #booleans of state
-    thermo = True # whether we have the thermodynamic data available
 
-    copies_per_cell = None
-    frequency = None
-    probrange = None
-
-    #generic counter to use how you please
-    counter = 0
-
-    """
-
-    INITIALISATION METHODS
-
-    """
-
-    def __init__(self, name, Mr, N, conc_mol_per_cell=None, conc_mol_per_l=None, thermo=True, gamma=1., T=298.15, P=101325., pH=7., charge=0., I=0. ):
+    def __init__(self, name, Mr, N, T=298.15, P=101325.,
+      pH=7., charge=0., I=0. ):
         self.name = name
         self.Mr = Mr
 
-        if thermo: #pass Thermo as False to update thermochemical parameters yourself
-            self.GetThermoParams(T, P, N, pH=pH, I=I, z=charge)
+        self.GetThermoParams(T, P, N, pH=pH, I=I, z=charge)
 
-        self.thermo = thermo
-        self.conc_mol_per_cell = conc_mol_per_cell
-        self.conc_mol_per_l = conc_mol_per_l
-        self.gamma = gamma
 
     def GetThermoParams(self, T, P, N, pH=7., I=0., z=0.):
 
         db = Database(this_dir+"/supcrt07-organics_AABB.xml")
         thermodynamics = Thermo(db)
         self.std_formation_gibbs = thermodynamics.standardPartialMolarGibbsEnergy(T, P, self.name).val *0.001
+
         AABB = thermodynamics.standardPartialMolarGibbsEnergy(T, P, 'AABB').val *0.001
-		# self.std_formation_gibbs = thermodynamics.standardPartialMolarGibbsEnergy(T=T, P=P, species=self.name).val
-		# AABB = thermodynamics.standardPartialMolarGibbsEnergy(T=T, P=P, species='AABB').val
+
         self.std_formation_R = self.std_formation_gibbs - AABB
 
         self.stdbio_formation_gibbs = BioMolecule.biogibbs(
-          self.std_formation_gibbs, T, pH, I, z, N)
+          self.std_formation_gibbs, T, pH, N, I=I, z=z)
 
         stdbio_AABB = BioMolecule.biogibbs(
-          self.std_formation_gibbs, T, pH, I, z, N)
+          AABB, T, pH, 4, I=I, z=0.)
 
-        self.stdbio_formation_R = self.stdbio_formation_gibbs - stdbio_AABB
+        self.stdbio_formation_R = BioMolecule.biogibbs(
+          self.std_formation_R, T, pH, N-4, I=I, z=0.)
 
+    @staticmethod
     def biogibbs(stdGibbs, T, pH, N, I=0., z=0):
+        """Uses eqs from Alberty 1998 'Calculation  of  Standard Transformed
+        Gibbs Energiesand Standard Transformed Enthalpies of Biochemical
+        Reactants', Archives of Biochemistry and Biophysics
+        """
         if I == 0.:
             return stdGibbs - (N*0.00831*T*math.log(10**(-pH)))
         else:
