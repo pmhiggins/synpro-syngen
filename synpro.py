@@ -73,35 +73,35 @@ TK = np.linspace(300,400, num=5)
 
 for T in TK:
 
-    _AABB = BioMolecule('AABB', 74.05866, T=T)
-    _PBB = BioMolecule('PBB', 56.04918, T=T)
-    _Water = BioMolecule('H2O(l)', 18, T=T)
+    _AABB = BioMolecule('AABB', 74.05866, 4, T=T)
+    _PBB = BioMolecule('PBB', 56.04918, 2, T=T)
+    _Water = BioMolecule('H2O(l)', 18, 2, T=T)
 
     dGfAABB= _AABB.std_formation_gibbs
     PBB = _PBB.std_formation_gibbs
     dGfH2O = _Water.std_formation_gibbs
 
 
-    _ALA = BioMolecule('Alanine(aq)', 89, T=T)
-    _ARG = BioMolecule('Arginine(aq)', 174, T=T)
-    _ASN = BioMolecule('Asparagine(aq)', 132, T=T)
-    _ASP = BioMolecule('Aspartic-Acid(aq)', 133, T=T)
-    _CYS = BioMolecule('Cysteine(aq)', 121, T=T)
-    _GLN = BioMolecule('Glutamic-Acid(aq)', 148, T=T)
-    _GLU = BioMolecule('Glutamine(aq)', 147, T=T)
-    _HIS = BioMolecule('Histidine(aq)', 155, T=T)
-    _ILE = BioMolecule('Isoleucine(aq)', 131, T=T)
-    _LEU = BioMolecule('Leucine(aq)', 131, T=T)
-    _LYS = BioMolecule('Lysine(aq)', 146, T=T)
-    _MET = BioMolecule('Methionine(aq)', 149, T=T)
-    _PHE = BioMolecule('Phenylalanine(aq)', 165, T=T)
-    _PRO = BioMolecule('Proline(aq)', 115, T=T)
-    _SER = BioMolecule('Serine(aq)', 105, T=T)
-    _THR = BioMolecule('Threonine(aq)', 119, T=T)
-    _TRP = BioMolecule('Tryptophan(aq)', 181, T=T)
-    _TYR = BioMolecule('Tyrosine(aq)', 181, T=T)
-    _VAL = BioMolecule('Valine(aq)', 117, T=T)
-    _GLY = BioMolecule('Glycine(aq)', 75, T=T)
+    _ALA = BioMolecule('Alanine(aq)', 89, 7, T=T)
+    _ARG = BioMolecule('Arginine(aq)', 174, 14, T=T)
+    _ASN = BioMolecule('Asparagine(aq)', 132, 8, T=T)
+    _ASP = BioMolecule('Aspartic-Acid(aq)', 133, 7, T=T)
+    _CYS = BioMolecule('Cysteine(aq)', 121, 7, T=T)
+    _GLN = BioMolecule('Glutamic-Acid(aq)', 148, 9, T=T)
+    _GLU = BioMolecule('Glutamine(aq)', 147, 10, T=T)
+    _HIS = BioMolecule('Histidine(aq)', 155, 9, T=T)
+    _ILE = BioMolecule('Isoleucine(aq)', 131, 13, T=T)
+    _LEU = BioMolecule('Leucine(aq)', 131, 13, T=T)
+    _LYS = BioMolecule('Lysine(aq)', 146, 14, T=T)
+    _MET = BioMolecule('Methionine(aq)', 149, 11, T=T)
+    _PHE = BioMolecule('Phenylalanine(aq)', 165, 11, T=T)
+    _PRO = BioMolecule('Proline(aq)', 115, 9, T=T)
+    _SER = BioMolecule('Serine(aq)', 105, 7, T=T)
+    _THR = BioMolecule('Threonine(aq)', 119, 9, T=T)
+    _TRP = BioMolecule('Tryptophan(aq)', 181, 12, T=T)
+    _TYR = BioMolecule('Tyrosine(aq)', 181, 11, T=T)
+    _VAL = BioMolecule('Valine(aq)', 117, 11, T=T)
+    _GLY = BioMolecule('Glycine(aq)', 75, 5, T=T)
 
 
     AAdict = {
