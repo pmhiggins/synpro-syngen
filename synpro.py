@@ -55,7 +55,7 @@ for record in SeqIO.parse(fasta,'fasta'):
 #-------------------B. Define the dictionary--------------------------------
 #Glycine is considered a 'Special case'
 #The dictionary contains:
-#                       0= AA 3 letter code
+#                       0= AA 3 letter code -
 #                       1= dGf for the R group #(KJ mol) - Amend & Helgeson (2000)
 #                       2= Molecular weight #of the AA (Da)
 #                       3= Concentration #(mol/L)E. Coli - Bennett B. et al 2009 & Park J. et al 2016
