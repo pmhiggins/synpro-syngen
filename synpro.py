@@ -55,15 +55,15 @@ for record in SeqIO.parse(fasta,'fasta'):
 #-------------------B. Define the dictionary--------------------------------
 #Glycine is considered a 'Special case'
 #The dictionary contains:
-#                       0= AA 3 letter code -
-#                       1= dGf for the R group #(KJ mol) - Amend & Helgeson (2000)
-#                       2= Molecular weight #of the AA (Da)
-#                       3= Concentration #(mol/L)E. Coli - Bennett B. et al 2009 & Park J. et al 2016
-#                       4= Concentration #(mol/L)E. Mammalian - Bennett B. et al 2009 & Park J. et al 2016
-#                       5= Concentration #(mol/L)E. Yeast - Bennett B. et al 2009 & Park J. et al 2016
-#                       6 = AA dGf (KJ mol) - McCollom & Amend (2005) - [AA] (Neutral)
-#                       7 = R group dGf (KJ mol) - Equilibrator - [R] Cell
-#                       8 = AA dGf (KJ mol) - Equilibrator - [AA] Cell (Charged -1,-2 or 1 and ionic strength of 0.1M)
+#                       0= AA 3 letter code
+#                       1= R group dGf (KJ mol) # (KJ mol) - Amend & Helgeson (2000)-(Charged -1,-2 or 1, pH # 0, & Ionic strength of 0)
+#                       2= Molecular weight of the AA (Da)
+#                       3= Concentration (mol/L)E. Coli - Bennett B. et al 2009 & Park J. et al 2016
+#                       4= Concentration (mol/L)E. Mammalian - Park J. et al 2016
+#                       5= Concentration (mol/L)E. Yeast - Park J. et al 2016
+#                       6 = AA dGf (KJ mol) - McCollom & Amend (2005) - [AA] (Charged -1, 1, or 2, pH 0, & Ionic strength of 0)
+#                       7 = R group dGf (KJ mol) - Equilibrator/ Flamholz A. & Noor E. (2012)- [R] Cell #(Neutral charge, pH 7, & ionic strength of 0.1 M)
+#                       8 = AA dGf (KJ mol) - Equilibrator/ Flamholz A. & Noor E. (2012) - [AA] Cell #(Neutral charge, pH 7, & ionic strength of 0.1 M)
 
 ReactionGibbs_neu = []
 ReactionGibbs_chr = []
@@ -337,7 +337,7 @@ for T in TK:
     #For Yeast
     pdyeast= (1.1)*(1-0.6)*(0.40)
     #For human (Albe K. J.  theor. Biol. (1990) 143, 163-195)
-    pdhuman= (1.1)*(1-0.65)*(0.52)
+    pdmammal= (1.1)*(1-0.65)*(0.52)
     # Protein mass = protein density+ Avogadro's number (6.022e23) + Cell volume (10e-12 mL/um3)
     # pm= 𝑐 ∗ 𝐴𝑁 ∗ 𝐶𝑣
     #For E. coli / bacteria
@@ -345,7 +345,7 @@ for T in TK:
     #For Yeast
     pmyeast= ((pdyeast) * (6.022*10**23) * (10**-12))
     #For human
-    pmhuman= ((pdhuman) * (6.022*10**23) * (10**-12))
+    pmmammalian= ((pdmammal) * (6.022*10**23) * (10**-12))
     #Average protein size of this cell
     avP= totmw/ len(proteins) #average size in Da
     av_lenght= protlen/ len(proteins) #average lenght
@@ -384,18 +384,12 @@ for T in TK:
         protein_conc= (pmyeast/avP) #Protein concentration in 1um3 (proteins/um3)
         number_prot= (protein_conc * host_volume) #number of proteins in one yeast cell
         proteome_weight = number_prot * avP #Total weight of the proteome in Da
-
-    #---------------------------------------------------------
-    """Real values"""
-    #real_mol_L= len(proteins)/(6.022e23*1e-15)
-
+
     #--------------------------------------------------------H. For the molal Gibbs Free Energy (Neutral Charge)-----------------------------------
     PC = mol_L
-    #real_PC = real_mol_L
 
     #make a list of the free energies for each protein
     reactionGs_neu = []
-    #real_reactionGs = []
     for protein, stdG in zip(proteins, proteinGs_neu):
         lnQ = math.log(PC/len(proteins))
         for a in protein:
@@ -423,7 +417,6 @@ for T in TK:
 
     #make a list of the free energies for each protein
     reactionGs_chr = []
-    #real_reactionGs = []
     for protein, stdG in zip(proteins, proteinGs_chr):
         lnQ = math.log(PC/len(proteins))
         for a in protein:
@@ -468,10 +461,7 @@ elif celltype == "yeast":
 
 ax.plot(TK, ReactionGibbs_neu, label='Proteome energy using standard energies', c='g', linewidth=3)
 ax.plot(TK, ReactionGibbs_chr, label='Proteome energy using biological standard energies', c='r', linewidth=3)
-# ax.plot(TK, stdGibbs_neu, label='Proteome energy with neutrual AA', c='g', linewidth=3)
-# ax.plot(TK, stdGibbs_chr, label='Proteome energy with AA charged', c='r', linewidth=3)
 
-#ax.plot(TK, real_ReactionGibbs, label='Input proteins synthesis', c='r', linewidth=3)
 ax.set_ylabel(r'Energetic cost [kJ per dry g]', fontsize=14)
 ax.set_xlabel('Temperature [K]', fontsize=14)
 ax.tick_params(axis='both', which='major', labelsize=14)
