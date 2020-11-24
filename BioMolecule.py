@@ -25,11 +25,11 @@ class BioMolecule:
 
 
     def __init__(self, name, Mr, N, T=298.15, P=101325.,
-      pH=7., charge=0., I=0. ):
+      pH=7., z=0., I=0. ):
         self.name = name
         self.Mr = Mr
 
-        self.GetThermoParams(T, P, N, pH=pH, I=I, z=charge)
+        self.GetThermoParams(T, P, N, pH=pH, I=I, z=z)
 
 
     def GetThermoParams(self, T, P, N, pH=7., I=0., z=0.):
@@ -46,7 +46,7 @@ class BioMolecule:
           self.std_formation_gibbs, T, pH, N, I=I, z=z)
 
         stdbio_AABB = BioMolecule.biogibbs(
-          AABB, T, pH, 4, I=I, z=0.)
+          AABB, T, pH, 4, I=I, z=z)
 
         self.stdbio_formation_R = BioMolecule.biogibbs(
           self.std_formation_R, T, pH, N-4, I=I, z=0.)
