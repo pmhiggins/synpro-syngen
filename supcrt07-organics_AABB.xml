@@ -43048,10 +43048,10 @@
   </Species>
   <Species>
     <Name>HAMP-</Name>
-    <Formula>C10H13N507P-</Formula>
-    <Elements>C(10)H(13)N(507)P(1)</Elements>
+    <Formula>C10H13N5O7P-</Formula>
+    <Elements>C(10)H(13)N(5)O(7)P(1)</Elements>
     <Type>Aqueous</Type>
-    <MolarMass units="g/mol">7265.580881</MolarMass>
+    <MolarMass units="g/mol">346.205341</MolarMass>
     <Charge>-1</Charge>
     <Thermo>
       <HKF>
