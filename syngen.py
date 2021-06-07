@@ -1,3 +1,4 @@
+"""Version 07.06.20"""
 """-0-"""
 import sys,os, math, statistics, re
 import numpy as np
@@ -508,7 +509,7 @@ print('Formation energy of all the transcripts:', RNA_totdGf, 'KJ/mol')
 print('Reaction energy of all the transcripts:', RNA_totdGr, 'KJ/mol')
 print('Molar energy of the transcriptome:', RNA_ReactionGibbs[0], 'KJ/g')
 
-"""-O-"""
+"""-P-"""
 #---Ploting values---
 #--- DNA ----
 fig = plt.figure(figsize = (7,5))
