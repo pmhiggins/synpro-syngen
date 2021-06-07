@@ -1,3 +1,4 @@
+"""-0-"""
 import sys,os, math, statistics, re
 import numpy as np
 from Bio import SeqIO
@@ -5,10 +6,19 @@ from io import StringIO
 from Bio.Seq import Seq
 from Bio.Seq import transcribe
 import matplotlib.pyplot as plt
-
 from BioMolecule import BioMolecule
 
-#----------For Extracting the transcripts from the RNA sequence input file-------
+TK = np.linspace(275,400, num=6)
+R= 0.008314472 #Gas constant KJ mol K
+DNA_ReactionGibbs = []
+RNA_ReactionGibbs = []
+#---By block---
+DNA_block_ReactionGibbs = []
+RNA_block_ReactionGibbs = []
+
+
+"""-A-"""
+#--------Transcription------
 def transcription(ORF):
     mRNAlst = [] # save the fragments in a list
     mRNA= ''
@@ -28,33 +38,27 @@ def transcription(ORF):
             foundEnd = True
         elif codon == 'TAG': # Third possible stop codon
             foundEnd = True
-            foundStart = False # this tells it to start looking again
+            foundStart = False # Start looking again
             mRNAlst.append(mRNA) # save what we have to the list
             mRNA='' # reset for starting again
 
-    # if we got to the end with no TAG, add everything saved to mRNA so far
+    # if we get to the end with no TAG, add everything saved to mRNA so far
     if mRNA != '':
         mRNAlst.append(mRNA)
     return(mRNAlst)
 
 
-R= 0.008314472 #Gas constant KJ mol K
-RNA_ReactionGibbs = []
-DNA_ReactionGibbs = []
-TK = np.linspace(275,400, num=6)
-
-
-#------------B. Obtaining the sequences and definiting the conditions-----------
-print('Please type the name of a RNA fasta file, the file should be contained in the same folder')
-fname= input('fasta file name: ')
-print('---------------------------------Environments----------------------------')
-print('This program can calculate the energy to build a genome and the respective transcriptome for three model organisms in two conditions:')
-print('-->Environmental conditions: Here denominated as the standard conditions without accounting for pH, ionic strength or any other cellular factors (aqueous solution abd with a net charge of -2/-3 per molecule)')
-print('-->Cell conditions: Standard conditions plus a pH of 7 and a default ionic strength of 0.1 M. (in an aqueous solution and with a net charge of 0)')
+"""-B-"""
+#----Input sequence---------
+print('Enter the name of a DNA fasta file (e.g. Ecoli_genome.fasta)')
+fname= input('File name: ')
+file_name= "%s.fasta" % fname
 print('---------------------------------Model cell-----------------------------')
-celltype= input('Do you want to calculate the Gibbs energy for a bactetria, yeast or mammalian cell? [bacteria/yeast/mammalian]')
+celltype= input('Is this a bactetria, yeast or mammalian cell? [bacteria/yeast/mammalian]')
 
-#-----------------------------C. Opening with biopython-------------------------
+
+"""-C-"""
+#---Parsing with biopython----
 Seqname = []
 genelist = []
 records= []
@@ -66,33 +70,30 @@ for record in SeqIO.parse(fasta,'fasta'):
     genelist.append(str(record.seq)) #Genes in a list of strings
     records.append((record.seq)) # Genes in a list of int to be used by biopyhton
 
-#for record, name in zip(records, Seqname):
-#    print(record, name)
-
-#-------------------------D. Obtaining the complementary strand-----------------
-
+"""-D-"""
+#---Complement and transcribe------
+"""Complement"""
 for record in records:
     complementary=record.complement()
     genelist.append(str(complementary))
 
-print('there are', len(genelist)/2, 'sequences in this file, threfore, the calculations will be done for',len(genelist),'strands to get the values of the double strand DNA')
+print('there are', len(genelist)/2, 'sequences in this file. The program will calculate the energy of the genetic material in this file plus the complementary strand plus the respective transcripts')
 
+"""Transcribe"""
 for gene in records:
     mRNA = transcription(gene)
     mRNAs.extend(mRNA) #  Add a list on the end
 
 
-
+"""-E-"""
+#----Nucleotides library---
 for T in TK:
-    #-----------------------------A. Initial values---------------------------------
-
     # Gibbs energy of formation
     #Inorganic compounds (KJ/mol) #McCollom & Amend 2005
     dGf_H=0
     dGf_e=0
 
     _Water = BioMolecule('H2O(l)', 18, 2, T=T)
-
     dGf_H2O = _Water.stdbio_formation_gibbs
 
     # bases and nucleotides
@@ -131,10 +132,8 @@ for T in TK:
     # between ribose and deoxyribose (one OH bond on the ring).
     dGf_OH = _rib.stdbio_formation_gibbs - _drib.stdbio_formation_gibbs
 
-
     # other useful molecules - remove comments as needed!
-
-    # _H2PO4 = BioMolecule('H2PO4-, 96.987241, 2, T=T, z=-1)
+    _H2PO4 = BioMolecule('H2PO4-', 96.987241, 2, T=T, z=-1)
     # _HPO4 = BioMolecule('HPO4--', 95.979301, 1, T=T, z=-2)
     # _PO4 = BioMolecule('PO4---', 94.971361, 0, T=T, z=-3)
     # _ribphos = BioMolecule('Ribose-5-Phosphate-2', 150.1299, 10, T=T, z=-2)
@@ -147,15 +146,13 @@ for T in TK:
     # _dGS = BioMolecule('Deoxyguanosine(aq)', 267.24132, 13, T=T)
     # _dTS = BioMolecule('Deoxythymidine(aq)', 242.22856, 14, T=T)
 
-
-
     # Bonds (KJ/mol)
     dGf_PhdB = 22.175 # Phosphodiester bond (hidrolysis) Dickson K. 2000
 
     # NB for this we CAN'T change it with temperature - so this brings uncertainty
 
-    """Dictionaries"""
-    #-----------------------------E. Dictionaries-----------------------------------
+    """-F-"""
+    #---Dictionaries----
     #The dictionaries for both DNA  and RNA contain (In the same order):
     #                       0= monophosphate name
     #                       1= Base name
@@ -169,6 +166,8 @@ for T in TK:
     #                       9= dGf - Nucleotide at environmental conditions (McCollom & Amend 2005) (KJ mol)
     #                        10= dGf - base (database)
     #                        11= dGf - Nucleotide (database)
+    #                        12= dGf - Nucleotide ion
+
     #Dictionary for DNA
     DNAdict = {
       'A': ['dAMP','A',_dAMP.Mr,8.8e-6, 1.68e-5, 8.8e-6,335.5,-41.3,-365.2,-864.9,
@@ -199,20 +198,26 @@ for T in TK:
         _G.stdbio_formation_gibbs, _GMP.stdbio_formation_gibbs,
         _GMPion.stdbio_formation_gibbs]}
 
-    """----------------------------G. DNA----------------------------------------"""
-    #--------------------------G.1 Initialise values--------------------------------
+    """-G-"""
+    #---DNA---
+    """ G.0 - Initialise values"""
+    #--- Number of nucleotides on each strand and total weight---
     genome_lenght=0
     totweight=0
-    #---------------------For the Energy of each sequence---------------------------
-
+    #---Energy of each strand---
     DNA_totdGf=0
     DNA_geneGs=[]
     DNA_totdGr= 0
-
-    #make a list of the free energies for each gene
+    #---Block---
+    DNA_block_totdGf=0
+    DNA_block_geneGs=[]
+    DNA_block_totdGr= 0
+    #List of the free energies for each gene
     DNA_reactionGs = []
+    DNA_block_reactionGs= []
 
-    #------------------------G.2 Iterate through the DNA sequences------------------
+    """G.1 - Nucleotides count"""
+    #---Iterate through the DNA sequences----
     for sequence in genelist:
         #Total number of nucleotides
         Nn= len(sequence)
@@ -223,18 +228,14 @@ for T in TK:
         CC=sequence.count('C')
         CG=sequence.count('G')
 
-        #-------------------------G.3 Weight of the genome--------------------------
-        #To get the product of each nucleotides weight by the number of nucleotides
+        """G.2 - Weight of the genome"""
+        #The product of each nucleotide by its corresponding mass
         gene_weight = (
         (CA * DNAdict['A'][2]) + (CT * DNAdict['T'][2]) + (CC * DNAdict['C'][2]) + (CG * DNAdict['G'][2]) - ((Nn-1)*18))
         totweight+= gene_weight
 
-        #---------------------G.4 Miscellaneous values of the genome--------------------
-
-
-        #--------G.5 Energy of the genome -------
-
-        # we use standard biological conditions, with pH 7 and ionic strength 0.
+        """G.3 - Energy of the nucleotides"""
+        # At standard biological conditions, with pH 7 and ionic strength 0.
 
         #sigmaB will get the sum of energy of formation of the bases in the sequence
         sigmaB = (
@@ -248,45 +249,49 @@ for T in TK:
         sigmaNion = (
         (CA * DNAdict['A'][12]) + (CT * DNAdict['T'][12]) + (CC * DNAdict['C'][12]) + (CG * DNAdict['G'][12]))
 
-        """---------- Energy calculation from nucleotides --------------"""
-        #The bucket method will calculate the energy based on the dGf of the phosphate
-        #backbone and the dGf of the base without considering interactions
+        """G.4 - Formation and reaction energy of the genome"""
 
         """Gibbs Formation energy"""
         #GCA for dGf of the chain
         # sum of the nucleotide 2- ions, with n-1 Phosphodiester bonds made and an OH- removed from the sugar.
         DNA_dGf_chain = sigmaNion + (Nn-1)*(dGf_PhdB - dGf_OH)
-
         DNA_totdGf += DNA_dGf_chain
 
         """Gibbs Reaction Energy"""
         DNA_dGr = ((((Nn-1)*dGf_H2O) + DNA_dGf_chain) - sigmaN)
-
         DNA_geneGs.append(DNA_dGr)
         DNA_totdGr += DNA_dGr
 
+        """G.5 - Formation and reaction energy of the genome by blocks"""
+
+        """Gibbs Formation energy with bulding blocks"""
+        DNA_dGf_block = sigmaB + (Nn* (_drib.stdbio_formation_gibbs + _H2PO4.stdbio_formation_gibbs))
+        DNA_block_totdGf += DNA_dGf_block
+
+        """Gibbs Reaction Energy with building blocks"""
+        DNA_block_dGr = ((((Nn-1)*(2*dGf_H2O)) + DNA_dGf_block) - sigmaNion)
+        DNA_block_geneGs.append(DNA_block_dGr)
+        DNA_block_totdGr += DNA_block_dGr
 
 
-    """Concentrations"""
-    #get average values for molecular weight and gene lenght
+
+    """-H-"""
+    #Average values for molecular weight and gene lenght
+    #DNA oncentration. for the reaction quotient
     nucleotide_avmw= 327 #Da
     gene_meanlenght= genome_lenght/len(genelist) #Average lenght of the strands
     avG= totweight/len(genelist) #average gene size in Daltons
-
     host_volume= 1 #um3
     # To get the moles
-    # use 15 mg/mL with avG (15mg/ml from bionumbers)
+    # use 15 mg/mL with avG (15mg/ml from bionumbers [Elowitz MB, Surette MG, Wolf PE, Stock JB, Leibler S. Protein mobility in the cytoplasm of Escherichia coli. J Bacteriol. 1999 Jan181(1):197-203])
     conc_Da_ml = 15/(1.66054e-21) # 1.66054e-21 is the conversion Da-mg
     conc_molecules_ml = conc_Da_ml / avG #number molecules per ml
     mol_ml = conc_molecules_ml/6.022e23
     DNA_mol_L = mol_ml*1000
 
-    ### not sure how this worked
-    # moles= genome_lenght/6.022e23
-    # To get mol per litre
-    # print(genome_lenght/(6.022e23 * host_volume * 1e-15))
 
-    """Reaction quotient for this gene"""
+    """-I-"""
+    #Reaction quotient for this gene
     PC = DNA_mol_L
 
     for gene, stdG in zip(genelist, DNA_geneGs):
@@ -301,58 +306,75 @@ for T in TK:
                                     DNA_lnQ -= math.log(DNAdict[base][5])
 
         DNA_reactionGs.append((stdG+(R*(T)*DNA_lnQ)))
+    #--------By blocks-----------
+    #Reaction quotient for the Gibbs energy by building block
+
+    for geneblock, B_stdG in zip(genelist, DNA_block_geneGs):
+        DNA_B_lnQ = math.log(PC/len(genelist))
+        for base in geneblock:
+            if base in DNAdict.keys():
+                                if celltype == "bacteria":
+                                    DNA_lnQ -= math.log(DNAdict[base][3])
+                                elif celltype == "mammalian":
+                                    DNA_lnQ -= math.log(DNAdict[base][4])
+                                elif celltype == "yeast":
+                                    DNA_lnQ -= math.log(DNAdict[base][5])
+
+        DNA_block_reactionGs.append((B_stdG+(R*(T)*DNA_B_lnQ)))
 
 
-
-
+    """-J-"""
+    #Molar Gibbs Energy
     #take the average, which is in kJ/mol
     DNA_avgReactionG_kJmol = statistics.mean(DNA_reactionGs)
     # convert to kJ / dry g
     #avG is the average gene size
-    #Bucket
     DNA_avgReactionG_kJdryg = DNA_avgReactionG_kJmol * 1/(avG)
     DNA_ReactionGibbs.append(DNA_avgReactionG_kJdryg)
 
+    #---By block---
+    DNA_block_avgReactionG_kJmol = statistics.mean(DNA_block_reactionGs)
+    DNA_block_avgReactionG_kJdryg = DNA_block_avgReactionG_kJmol * 1/(avG)
+    DNA_block_ReactionGibbs.append(DNA_block_avgReactionG_kJdryg)
 
-    #------------------------G.4.2 Environmental conditions-------------------
 
 
-
-    """------------------------------J. RNA--------------------------------------"""
-    #-------------------------J.1 Initialise values---------------------------------
+    """-K-"""
+    #---RNA---
+    """ K.0 - Initialise values"""
+    #--- Number of nucleotides on each strand and total weight---
     transcriptome_lenght=0
     transcriptome_totweight=0
-    #---------------------For the Energy of each sequence---------------------------
-
+    #---Energy of each strand---
     RNA_totdGf=0
     RNA_geneGs=[]
     RNA_totdGr= 0
+    #---block---
+    RNA_block_totdGf=0
+    RNA_block_geneGs=[]
+    RNA_block_totdGr= 0
 
-    #-------------------------J.2 Iterate through the RNA sequences-----------------
+    """K.1 - Nucleotides count"""
+    #---Iterate through the DNA sequences----
     for m in mRNAs:
         #Total number of RNA nucleotides
         if len(m) != 0: #To get rid of blank lists
             RNA_Nn= len(m)
             transcriptome_lenght+= RNA_Nn
-
             #Number of each nucleotide
             RA=m.count('A')
             RU=m.count('U')
             RC=m.count('C')
             RG=m.count('G')
 
-            #-----------------------J.3 Weight of the transcriptome-----------------
+            """K.2 - Weight of the genome"""
             #To get the product of each nucleotides weight by the number of nucleotides
             RNA_weight = (
             (RA * RNAdict['A'][2]) + (RU * RNAdict['U'][2]) + (RC * RNAdict['C'][2]) + (RG * RNAdict['G'][2]) - ((RNA_Nn-1)*18))
             """We take away the H2O weight for every nucleotide"""
             transcriptome_totweight+= RNA_weight
 
-            #--------------J.5 Miscellaneous values for the transcriptome-------------------
-
-
-            #--------J.5 Energy of the proteome -------
-
+            """K.3 - Energy of the nucleotides"""
             # we use standard biological conditions, with pH 7 and ionic strength 0.
 
             #RNA_sigmaB will get the energy of formation of the bases in the sequence at cellular conditions
@@ -367,26 +389,38 @@ for T in TK:
             RNA_sigmaNion = (
             (RA * RNAdict['A'][12]) + (RU * RNAdict['U'][12]) + (RC * RNAdict['C'][12]) + (RG * RNAdict['G'][12]))
 
-            """---------- Energy calculation --------------"""
-            #The bucket method will calculate the energy based on the dGf of the phosphate
-            #backbone and the dGf of the base without considering interactions
+            """K.4 - Formation and reaction energy of the transcriptome"""
+            #This method will calculate the energy based on the dGf of the phosphate
+            #backbone and the dGf of the base without considering intramolecular interactions
 
-            """Gibbs Formation energy at cellular conditions"""
+            """Gibbs Formation energy"""
             # sum of the nucleotide 2- ions, with n-1 Phosphodiester bonds made and an OH- removed.
             RNA_dGf_chain = RNA_sigmaNion + (Nn-1)*(dGf_PhdB - dGf_OH)
             RNA_totdGf+= RNA_dGf_chain
 
-            """Gibbs Reaction Energy at ceullar conditions"""
+            """Gibbs reaction energy"""
             RNA_dGr= ((((Nn-1)*dGf_H2O) + RNA_dGf_chain) - RNA_sigmaN)
             RNA_geneGs.append(RNA_dGr)
             RNA_totdGr+= RNA_dGr
 
-    """Concentrations"""
+            """G.5 - Formation and reaction energy of the transcriptome by blocks"""
+
+            """Gibbs Formation energy"""
+            # sum of the nucleotide 2- ions, with n-1 Phosphodiester bonds made and an OH- removed.
+            RNA_dGf_block_chain = RNA_sigmaB + (Nn* (_rib.stdbio_formation_gibbs + _H2PO4.stdbio_formation_gibbs))
+            RNA_block_totdGf+= RNA_dGf_block_chain
+
+            """Gibbs reaction energy"""
+            RNA_block_dGr= ((((Nn-1)*(2*dGf_H2O)) + RNA_dGf_block_chain) - RNA_sigmaNion)
+            RNA_block_geneGs.append(RNA_dGr)
+            RNA_block_totdGr+= RNA_block_dGr
+
+
+    """-L-"""
     #get average values for molecular weight and lenght
     RNA_nucleotide_avmw= 339.5 #Da
     messenger_meanlenght= transcriptome_lenght/len(mRNAs) #Average lenght of the strands
     avm= transcriptome_totweight/len(mRNAs) #average gene size in Daltons
-
     # same technique for concentrations as DNA
     host_volume= 1 #um3
     # To get the moles
@@ -397,17 +431,17 @@ for T in TK:
     RNA_mol_L = RNA_mol_ml*1000
 
 
-
-
-    """Reation quotient at cellular conditions"""
+    """-M-"""
+    #Reaction quotient for the entire transcriptome
     RNA_PC = RNA_mol_L
 
     #make a list of the free energies for each gene
     RNA_reactionGs = []
+    RNA_block_reactionGs = []
     #Bucket method at cellular conditions
-    for gene, RNA_stdG in zip(mRNAs, RNA_geneGs):
-        RNA_lnQ = math.log(RNA_PC/len(genelist))
-        for base in gene:
+    for transcript, RNA_stdG in zip(mRNAs, RNA_geneGs):
+        RNA_lnQ = math.log(RNA_PC/len(mRNAs))
+        for base in transcript:
             if base in RNAdict.keys():
                                 if celltype == "bacteria":
                                     RNA_lnQ -= math.log(RNAdict[base][3])
@@ -418,8 +452,25 @@ for T in TK:
 
         RNA_reactionGs.append((RNA_stdG+(R*(T)*RNA_lnQ)))
 
+    #---By block---
+    for b_transcript, RNA_B_stdG in zip(mRNAs, RNA_block_geneGs):
+        RNA_B_lnQ = math.log(RNA_PC/len(mRNAs))
+        for base in b_transcript:
+            if base in RNAdict.keys():
+                                if celltype == "bacteria":
+                                    RNA_lnQ -= math.log(RNAdict[base][3])
+                                elif celltype == "mammalian":
+                                    RNA_lnQ -= math.log(RNAdict[base][4])
+                                elif celltype == "yeast":
+                                    RNA_lnQ -= math.log(RNAdict[base][5])
 
+        RNA_block_reactionGs.append((RNA_B_stdG+(R*(T)*RNA_B_lnQ)))
+
+
+    """-N-"""
+    #Molar Gibbs Energy
     #take the average, which is in kJ/mol
+
     RNA_avgReactionG_kJmol = statistics.mean(RNA_reactionGs)
     # convert to kJ / dry g
     #avG is the average gene size
@@ -427,42 +478,86 @@ for T in TK:
     RNA_avgReactionG_kJdryg = RNA_avgReactionG_kJmol * 1/(avm)
     RNA_ReactionGibbs.append(RNA_avgReactionG_kJdryg)
 
+    #---By block---
+    RNA_avgReactionG_block_kJmol = statistics.mean(RNA_block_reactionGs)
+    RNA_avgReactionG_block_kJdryg = RNA_avgReactionG_block_kJmol * 1/(avm)
+    RNA_block_ReactionGibbs.append(RNA_avgReactionG_block_kJdryg)
 
 
+"""-O-"""
+#---Printing values---
+"""DNA"""
+if celltype == "bacteria":
+     print('There are',len(mRNAs), 'gene in this bacteria cell')
 
+elif celltype == "mammalian":
+     print('There are',len(mRNAs), 'genes in this mammalian cell')
 
+elif celltype == "yeast":
+     print('There are',len(mRNAs), 'genes in this yeast cell')
 
+print('The energy required for this genome at 275K is a follows:')
+print('---Genome---')
+print('Formation energy of all the genes:', DNA_totdGf, 'KJ/mol')
+print('Reaction energy of all the genes:', DNA_totdGr, 'KJ/mol')
+print('Molar energy of the genome:', DNA_ReactionGibbs[0], 'KJ/g')
 
+"""RNA"""
+print('---Proteome---')
+print('Formation energy of all the transcripts:', RNA_totdGf, 'KJ/mol')
+print('Reaction energy of all the transcripts:', RNA_totdGr, 'KJ/mol')
+print('Molar energy of the transcriptome:', RNA_ReactionGibbs[0], 'KJ/g')
 
-#------------------------I. Printing values of the genome-----------------------
-print('-------------------------------------------Genome information-------------------------------------------------------------------')
-# if celltype == "bacteria":
-#     print('These are the values of the genome in the bacterial cell at cellular and environental conditions')
-#
-# elif celltype == "mammalian":
-#     print('These are the values of the genome in the mammalian cell at cellular and environental conditions')
-#
-# elif celltype == "yeast":
-#     print('These are the values of the genome in the yeast cell at cellular and environental conditions')
+"""-O-"""
+#---Ploting values---
+#--- DNA ----
+fig = plt.figure(figsize = (7,5))
+ax= fig.add_subplot(111)
 
-# print('--> Energy at Cellular conditions:')
-# print('Average Gibbs Free energy of Formation [dGf]:', DNA_totdGf/(len(genelist)), 'KJ per sequence')
-# print('Average Gibbs Free energy of reaction [dGr]:', DNA_totdGr/(len(genelist)), 'KJ per sequence')
-# print('The energy to build the genome adjusted to 1 gram at 298.15K:')
-# print(DNA_ReactionGibbs[45],'KJ/g considering the absolute intracellular metabolite concentrations for the selected cell type and the sequence lenght')
+if celltype == "bacteria":
+    plt.title('Molar Gibbs Energy for a bacteria cell')
+elif celltype == "mammalian":
+    plt.title('Molar Gibbs Energy for a mammalian cell')
+elif celltype == "yeast":
+    plt.title('Molar Gibbs Energy for a yeast cell')
 
+ax.plot(TK,DNA_ReactionGibbs, label='Energy to synthesise this genome', c='r', linewidth=2)
+ax.plot(TK,DNA_block_ReactionGibbs, label='Energy by block to synthesise this genome', c='b', linewidth=2)
+# ax.plot(TK, DNA_ReactionGibbs_env, label='Genome energy at environment conditions', marker='o', c='b', linewidth=3)
 
-# print('--> Energy at Environmental conditions:')
-# print('Average Gibbs Free energy of Formation [dGf]:', DNA_totdGf_env/(len(genelist)), 'KJ per sequence')
-# print('Average Gibbs Free energy of reaction [dGr]:', DNA_totdGr_env/(len(genelist)), 'KJ per sequence')
-# print('The energy to build the genome adjusted to 1 gram at 298.15K:')
-# print(DNA_ReactionGibbs_env[45],'KJ/g considering the absolute intracellular metabolite concentrations for the selected cell type and the sequence lenght')
+ax.set_ylabel(r'Energetic cost [KJ per gram]', fontsize=14)
+ax.set_xlabel('Temperature [K]', fontsize=14)
+ax.tick_params(axis='both', which='major', labelsize=14)
 
+ax.set_xlim(270, 400)
+plt.legend(fontsize=14)
+plt.tight_layout()
+plt.show()
 
-print('Average values per gene sequence (Wheight and lenght):')
-print('The weight of the double strand genome, based on the input file is:', totweight,'Da')
-print('The average weight of the genes or genome of the input file is' ,avG,'Da with', gene_meanlenght,'nucleotides in average')
-print('The concentration is',DNA_mol_L,' moles of DNA per litre')
+#---RNA ----
+fig = plt.figure(figsize = (7,5))
+ax= fig.add_subplot(111)
+
+if celltype == "bacteria":
+    plt.title('Molar Gibbs Energy of the transcriptome for a bacteria cell')
+elif celltype == "mammalian":
+    plt.title('Molar Gibbs Energy of the transcriptome for a mammalian cell')
+elif celltype == "yeast":
+    plt.title('Molar Gibbs Energy of the transcriptome for a yeast cell')
+
+ax.plot(TK,RNA_ReactionGibbs, label='Energy to synthesise this transcriptome', linestyle='dashed', c='b', linewidth=2)
+ax.plot(TK,RNA_block_ReactionGibbs, label='Energy by block', linestyle='dotted', c='g', linewidth=2)
+# ax.plot(TK, RNA_ReactionGibbs_env, label='Transcriptime energy at environment conditions', marker='o', c='b', linewidth=3)
+
+ax.set_ylabel(r'Energetic cost [KJ per gram]', fontsize=14)
+ax.set_xlabel('Temperature [K]', fontsize=14)
+ax.tick_params(axis='both', which='major', labelsize=14)
+
+ax.set_xlim(270, 400)
+plt.legend(fontsize=14)
+plt.tight_layout()
+plt.show()
+
 
 
 
@@ -522,79 +617,3 @@ print('The concentration is',DNA_mol_L,' moles of DNA per litre')
         #     #Bucket
         #     RNA_avgReactionG_kJdryg_env = RNA_avgReactionG_kJmol_env * 1/(avG)
         #     RNA_ReactionGibbs_env.append(RNA_avgReactionG_kJdryg_env)
-
-#------------------------I. Printing values of the transcriptome-----------------------
-print('-------------------------------------------Transcriptome information-------------------------------------------------------------------')
-# if celltype == "bacteria":
-#     print('These are the values of the transcriptome in the bacterial cell at cellular and environental conditions')
-#
-# elif celltype == "mammalian":
-#     print('These are the values of the transcriptome in the mammalian cell at cellular and environental conditions')
-#
-# elif celltype == "yeast":
-#     print('These are the values of the transcriptome in the yeast cell at cellular and environental conditions')
-#
-#
-# print('--> Energy at Cellular conditions:')
-# print('Average Gibbs Free energy of Formation [dGf]:', RNA_totdGf/(len(genelist)), 'KJ per sequence')
-# print('Average Gibbs Free energy of reaction [dGr]:', RNA_totdGr/(len(genelist)), 'KJ per sequence')
-# print('The energy to build the transcriptome adjusted to 1 gram at 298.15K:')
-# print(RNA_ReactionGibbs[45],'KJ/g considering the absolute intracellular metabolite concentrations for the selected cell type and the sequence lenght')
-#
-# print('--> Energy at Environmental conditions:')
-# print('Average Gibbs Free energy of Formation [dGf]:', RNA_totdGf_env/(len(genelist)), 'KJ per sequence')
-# print('Average Gibbs Free energy of reaction [dGr]:', RNA_totdGr_env/(len(genelist)), 'KJ per sequence')
-# print('The energy to build the transcriptome adjusted to 1 gram at 298.15K:')
-# print(RNA_ReactionGibbs_env[45],'KJ/g considering the absolute intracellular metabolite concentrations for the selected cell type and the sequence lenght')
-
-print('Average values per gene sequence (Wheight and lenght):')
-print('The weight of the mRNA, based on the input file is:', totweight,'Da')
-print('The average weight of the mRNAs transcribed from DNA the input file is' ,avG,'Da with', gene_meanlenght,'nucleotides in average')
-print('The concentration is',RNA_mol_L,' moles of RNA per litre')
-
-
-#----------------------Plotting for the DNA ------------------------------------
-fig = plt.figure(figsize = (7,5))
-ax= fig.add_subplot(111)
-
-if celltype == "bacteria":
-    plt.title('Molar Gibbs Energy of the genome calculated in two conditions for a bacteria cell')
-elif celltype == "mammalian":
-    plt.title('Molar Gibbs Energy of the genome calculated in two conditions for a mammalian cell')
-elif celltype == "yeast":
-    plt.title('Molar Gibbs Energy of the genome calculated in two conditions for a yeast cell')
-
-ax.plot(TK,DNA_ReactionGibbs, label='Genome energy at cell conditions', linestyle='dashed', c='r', linewidth=3)
-# ax.plot(TK, DNA_ReactionGibbs_env, label='Genome energy at environment conditions', marker='o', c='b', linewidth=3)
-
-ax.set_ylabel(r'Energetic cost [KJ per gram]', fontsize=14)
-ax.set_xlabel('Temperature [K]', fontsize=14)
-ax.tick_params(axis='both', which='major', labelsize=14)
-
-ax.set_xlim(270, 400)
-plt.legend(fontsize=14)
-plt.tight_layout()
-plt.show()
-
-#----------------------Plotting for the RNA ------------------------------------
-fig = plt.figure(figsize = (7,5))
-ax= fig.add_subplot(111)
-
-if celltype == "bacteria":
-    plt.title('Molar Gibbs Energy of the transcriptome calculated in two conditions for a bacteria cell')
-elif celltype == "mammalian":
-    plt.title('Molar Gibbs Energy of the transcriptome calculated in two conditions for a mammalian cell')
-elif celltype == "yeast":
-    plt.title('Molar Gibbs Energy of the transcriptome calculated in two conditions for a yeast cell')
-
-ax.plot(TK,RNA_ReactionGibbs, label='Transcriptome energy at cell conditions', linestyle='dashed', c='r', linewidth=3)
-# ax.plot(TK, RNA_ReactionGibbs_env, label='Transcriptime energy at environment conditions', marker='o', c='b', linewidth=3)
-
-ax.set_ylabel(r'Energetic cost [KJ per gram]', fontsize=14)
-ax.set_xlabel('Temperature [K]', fontsize=14)
-ax.tick_params(axis='both', which='major', labelsize=14)
-
-ax.set_xlim(270, 400)
-plt.legend(fontsize=14)
-plt.tight_layout()
-plt.show()
