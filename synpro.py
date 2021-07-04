@@ -1,3 +1,4 @@
+"""Synpro Version P.04.07.21"""
 #----------0.0 To initialise and define values---------
 
 import sys,os, math, statistics
@@ -8,6 +9,17 @@ from io import StringIO
 import matplotlib.pyplot as plt
 
 from BioMolecule import BioMolecule
+#--------------------------------
+import progressbar
+from progressbar import AnimatedMarker, Bar, BouncingBar, Counter, ETA, \
+    AdaptiveETA, FileTransferSpeed, FormatLabel, Percentage, \
+    ProgressBar, ReverseBar, RotatingMarker, \
+    SimpleProgress, Timer, UnknownLength
+"""Progress bar"""
+widgets=['Calculating the energy of the proteins', progressbar.Bar('|'), progressbar.Counter(), '(', progressbar.Percentage(), ' complete)',
+    ' [', progressbar.Timer(), '] '
+    ' (', progressbar.ETA(), ') ']
+
 
 #dGfAABB= -82.38 # kcal mol - Amend J. (2000)
 # dGfAABB= -344.6779 #KJ mol
@@ -16,30 +28,19 @@ from BioMolecule import BioMolecule
 # dGfH2O= -237.3 #kJ mol−1 - McCollom and Amend (2005)
 R= 0.008314472 #Gas constant KJ mol K
 T= 298.15 # Standard temperature
+TK = np.linspace(275,400, num=24)
 #------------------ A.-1 To get the information ---------
-print('Please type in the name of a fasta file containing a protein sequence')
-fname = input('fasta file name: ')
+print('Enter the name of the fasta file containing protein sequences (e.g. Ecoli_proteome.fasta)')
+fname = input('File name: ')
 print('Choose one of the three model organisms corresponding to the protein sequence')
 celltype= input('Is this a bactetria, yeast or mammalian cell? [bacteria/yeast/mammalian]')
-
-#------------------ A.0 To open a file without biopython ---------
-
-#inFile = open(fname,'r')
-
-#headerList = []
-#seqList = []
-#currentSeq = ''
-#for line in inFile:
-#   if line[0] == ">":
-#      headerList.append(line[1:].strip())
-#      if currentSeq != '':
-#         seqList.append(currentSeq)
-
-#      currentSeq = ''
- #  else:
-#      currentSeq += line.strip()
-
-#seqList.append(currentSeq)
+temp= input('Do you want to calculate the energy at any specific temperature? [yes/no] ')
+if temp == 'yes':
+    stemperature= int(input('Type the temperature (in kelvin) you would like to print results for: '))
+    TK=np.append(TK,stemperature)
+    TK=np.sort(TK)
+    selected_temp= np.nonzero(TK == stemperature)[0][0]
+
 #-------------------------A.1 To open a file with biopython-----------
 protname = []
 proteins = []
@@ -50,7 +51,6 @@ for record in SeqIO.parse(fasta,'fasta'):
    proteins.append(str(record.seq))
 
 print('there are', len(proteins), 'sequences in this proteome')
-
 
 #-------------------B. Define the dictionary--------------------------------
 #Glycine is considered a 'Special case'
@@ -71,10 +71,14 @@ ReactionGibbs_chr = []
 stdGibbs_chr = []
 stdGibbs_neu = []
 
-TK = np.linspace(275,400, num=26)
+
+dGf_chr_av=[]
+dGr_chr_av=[]
+dGf_neu_av=[]
+dGr_neu_av=[]
 
 
-for T in TK:
+for T in progressbar.progressbar(TK, widgets=widgets):
 
     _AABB = BioMolecule('AABB', 74.05866, 4, T=T)
     _PBB = BioMolecule('PBB', 56.04918, 2, T=T)
@@ -204,10 +208,13 @@ for T in TK:
     sumavgaa=0
     protlen=0
     totmw=0
+    #chr
+    dGfs_chr=[]
     proteinGs_chr=[]
+    #Neu
+    dGfs_neu=[]
     proteinGs_neu=[]
-    dGfs_chr=[]
-    dGfs_neu=[]
+
 
     #---- First count the AA in the protein, this block will identify one or/and three letter AA codes
     for protein in proteins:
@@ -318,11 +325,13 @@ for T in TK:
         + (CHis * AAdict['H'][6]) + (CIle * AAdict['I'][6]) + (CLeu * AAdict['L'][6]) + (CLys * AAdict['K'][6])
         + (CMet * AAdict['M'][6]) + (CPhe * AAdict['F'][6]) + (CPro * AAdict['P'][6]) + (CSer * AAdict['S'][6])
         + (CThr * AAdict['T'][6]) + (CTrp * AAdict['W'][6]) + (CTyr * AAdict['Y'][6]) + (CVal * AAdict['V'][6]))
-
+
+
+
+
         #For the entire equation dGf[P]
         dGfP_neu= dGfPBB_dGfAABB + sigmAAR_neu
         dGfs_neu.append(dGfP_neu)
-
         #print('The standard free energy of formation for this protein is',dGfP, 'kJ mol-1')
         #-----------------------------------E. The Gibbs free energy of reaction dGr[P]-------------------------------------
         dGr_neu= ((((nAA-1)*dGfH2O) + dGfP_neu) - sigmAA_neu) #KJ mol
@@ -364,7 +373,7 @@ for T in TK:
         proteome_weight = number_prot * avP #Total weight of the proteome in Da
 
     elif celltype == "mammalian":
-        host_volume=3000 #um3
+        host_volume=2000 #um3
         host_mass= 1.23e-09 #dry grams
         #---------------------------------------------------------
         """Protein concentration in a mammalian cell"""
@@ -375,7 +384,7 @@ for T in TK:
         proteome_weight= number_prot * avP #Total weight of the proteome in Da
 
     elif celltype == "yeast":
-        host_volume= 30 #um3
+        host_volume= 75 #um3
         host_mass= 3.16e-11 #dry grams
         #---------------------------------------------------------
         """Protein concentration in yeast"""
@@ -438,15 +447,35 @@ for T in TK:
     avgReactionG_kJdryg_chr = avgReactionG_kJmol_chr * 1/(avP)
     ReactionGibbs_chr.append(avgReactionG_kJdryg_chr)
     stdGibbs_chr.append(statistics.mean(proteinGs_chr))
-
-print('--------These are the theoretical values:--------------------------------')
-
-print('The total theoretical size of the proteome according to the input sequence is ', '{:.2e}'.format(number_prot), 'proteins in the cell, with a diversity of', len(proteins),'proteins')
-print('There are', moles,'moles of proteins in the proteome with a concentration of',mol_L,' mol per litre')
-print('The total weight of this proteome is', proteome_weight, ' Da')
-print('The estimated energy to build this proteome at 300 K with neutral AA is:',ReactionGibbs_neu[6],'KJ mol and with charged AA is:',ReactionGibbs_chr[6],'KJ mol')
-print('The average dGf for each protein with neutral AAs is:', statistics.mean(dGfs_neu),'and', statistics.mean(dGfs_chr), 'KJ mol with charged AAs')
-print('The average dGr for each protein with neutral AAs is:', avgReactionG_kJdryg_neu, 'and', avgReactionG_kJdryg_chr, 'KJ mol with charged AAs')
+
+
+    #Averages
+    dGf_chr_av.append(statistics.mean(dGfs_chr))
+    dGr_chr_av.append(statistics.mean(proteinGs_chr))
+    #Neu
+    dGf_neu_av.append(statistics.mean(dGfs_neu))
+    dGr_neu_av.append(statistics.mean(proteinGs_neu))
+
+if temp == 'yes':
+    print('--------These are the theoretical values:--------------------------------')
+    print(' ')
+    print('The total theoretical size of the proteome according to the input sequence is ', '{:.2e}'.format(number_prot), 'proteins in the cell, with a diversity of', len(proteins),'proteins')
+    print('There are', moles,'moles of proteins in the proteome with a concentration of',mol_L,' mol per litre')
+    print('The total weight of this proteome is', proteome_weight, ' Da')
+
+    print(' ')
+    print('The estimated energy to build this proteome at', stemperature, 'K is:')
+    print(' ')
+    print('With charged AA:')
+    print('Gibbs formation energy:', "%.3f" % dGf_chr_av[selected_temp],'KJ mol')
+    print('Gibbs reaction energy:', "%.3f" % dGr_chr_av[selected_temp],'KJ mol')
+    print('Gibbs molar energy:',"%.3f" % ReactionGibbs_chr[selected_temp],'KJ/g')
+    print(' ')
+    print('With neutral AA:')
+    print('Gibbs formation energy:', "%.3f" % dGf_neu_av[selected_temp],'KJ mol')
+    print('Gibbs reaction energy:', "%.3f" % dGr_neu_av[selected_temp],'KJ mol')
+    print('Gibbs molar energy:',"%.3f" % ReactionGibbs_neu[selected_temp],'KJ/g')
+    print(' ')
 
 #-----------------------------------------------------I. To plot in different temperatures---------------------------------
 fig = plt.figure(figsize = (7,5))
