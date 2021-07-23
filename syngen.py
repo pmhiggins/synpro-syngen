@@ -189,30 +189,43 @@ for T in TK:
     # bases and nucleotides
     # BioMolecules are declared with (name, Mr, no. H, T, charge)
     _A = BioMolecule('Adenine(aq)', 135, 5, T=T)
-    _AMP = BioMolecule('HAMP-', 346.205341, 13, T=T, z=-1)
+    #_AMP = BioMolecule('HAMP-', 346.205341, 13, T=T, z=-1)
     _AMPion = BioMolecule('AMP2-', 345.205341, 12, T=T, z=-2)
-    _dAMP = BioMolecule('dHAMP-', 330.213881, 13, T=T, z=-1)
+    #_dAMP = BioMolecule('dHAMP-', 330.213881, 13, T=T, z=-1)
     _dAMPion = BioMolecule('dAMP2-', 329.205941, 12, T=T, z=-2)
+    #--
+    _AMP = BioMolecule('+H2AMP-(aq)', 347.221221, 14, T=T)
+    _dAMP = BioMolecule('d+H2AMP-(aq)', 300.24806, 14, T=T)
 
     _C = BioMolecule('Cytosine(aq)', 111.102, 5, T=T)
-    _CMP = BioMolecule('HCMP-', 322.188581, 13, T=T, z=-1)
+    #_CMP = BioMolecule('HCMP-', 322.188581, 13, T=T, z=-1)
     _CMPion = BioMolecule('CMP2-', 321.180641, 12, T=T, z=-2)
-    _dCMP = BioMolecule('dHCMP-', 306.189181, 13, T=T, z=-1)
+    #_dCMP = BioMolecule('dHCMP-', 306.189181, 13, T=T, z=-1)
     _dCMPion = BioMolecule('dCMP2-', 305.181241, 12, T=T, z=-2)
+    #--
+    _CMP = BioMolecule('+H2CMP-(aq)', 323.196521, 14, T=T)
+    _dCMP = BioMolecule('d+H2CMP-(aq)', 307.197121, 14, T=T)
 
     _G = BioMolecule('Guanine(aq)', 151.1261, 5, T=T)
-    _GMP = BioMolecule('HGMP-', 362.212681, 13, T=T, z=-1)
+    #_GMP = BioMolecule('HGMP-', 362.212681, 13, T=T, z=-1)
     _GMPion = BioMolecule('GMP2-', 361.204741, 12, T=T, z=-2)
-    _dGMP = BioMolecule('dHGMP-', 346.213281, 13, T=T, z=-1)
+    #_dGMP = BioMolecule('dHGMP-', 346.213281, 13, T=T, z=-1)
     _dGMPion = BioMolecule('dGMP2-', 345.205341, 12, T=T, z=-2)
+    #--
+    _dGMP = BioMolecule('d+H2GMP-(aq)', 316.24746, 14, T=T)
+    _GMP = BioMolecule('+H2GMP-(aq)', 363.220621, 14, T=T)
 
     _T = BioMolecule('Thymine(aq)', 126.11334, 6, T=T)
-    _dTMP =BioMolecule('dHTMP-', 321.200521, 14, T=T, z=-1)
+    #_dTMP =BioMolecule('dHTMP-', 321.200521, 14, T=T, z=-1)
     _dTMPion =BioMolecule('dTMP2-', 320.192581, 13, T=T, z=-2)
+    #--
+    _dTMP = BioMolecule('d+H2TMP-(aq)', 322.208461, 15, T=T)
 
     _U = BioMolecule('Uracil(aq)', 112.086, 4, T=T)
-    _UMP = BioMolecule('HUMP-', 323.173341, 12, T=T, z=-1)
+    #_UMP = BioMolecule('HUMP-', 323.173341, 12, T=T, z=-1)
     _UMPion = BioMolecule('UMP2-', 322.165401, 11, T=T, z=-2)
+    #--
+    _UMP = BioMolecule('+H2UMP-(aq)', 324.181281, 13, T=T)
 
 
     # sugars
@@ -224,6 +237,7 @@ for T in TK:
 
     # other useful molecules - remove comments as needed!
     _H2PO4 = BioMolecule('H2PO4-', 96.987241, 2, T=T, z=-1)
+    _H3PO4 = BioMolecule('H3PO4(aq)', 97.995181, 3, T=T)
     # _HPO4 = BioMolecule('HPO4--', 95.979301, 1, T=T, z=-2)
     # _PO4 = BioMolecule('PO4---', 94.971361, 0, T=T, z=-3)
     # _ribphos = BioMolecule('Ribose-5-Phosphate-2', 150.1299, 10, T=T, z=-2)
@@ -238,14 +252,15 @@ for T in TK:
 
     # Bonds (KJ/mol)
     #dGf_PhdB= -22.175 # Phosphodiester bond At 25 °C, pH 7 (Repair) Dickson K. 2000
-    dGf_PhdB= 103.76 # Phosphodiester bond At 65 °C, pH 8 (Hydrolysis) Molina R. 2015
+    dGf_PhdB= 22.175 # (Reversed) Phosphodiester bond At 25 °C, pH 7 (Repair) Dickson K. 2000
+    #dGf_PhdB= 103.76 # Phosphodiester bond At 65 °C, pH 8 (Hydrolysis) Molina R. 2015
 
     # NB for this we CAN'T change it with temperature - so this brings uncertainty
 
     """-F-"""
     #---Dictionaries----
     #The dictionaries for both DNA  and RNA contain (In the same order):
-    #                       0= monophosphate name
+    #                       0= Nucleotide name
     #                       1= Base name
     #                       2= Molecular weight (Da)
     #                       3= Absolute intracellular concentration mol/L - E. coli
@@ -356,10 +371,10 @@ for T in TK:
 
         """G.5 - Formation and reaction energy of the genome by blocks"""
         """Gibbs Formation energy"""
-        DNA_block_dGf_chain = sigmaB + phosba
+        DNA_block_dGf_chain = sigmaB + (phosba - dGf_OH)
         DNA_block_dGf.append(DNA_block_dGf_chain)
         """Gibbs Reaction Energy"""
-        DNA_block_dGr_ss = (((Nn-1)*(2*dGf_H2O)) + DNA_block_dGf_chain) - sigmaNion
+        DNA_block_dGr_ss = ((Nn*dGf_H2O) + DNA_block_dGf_chain) - sigmaN
         DNA_block_dGr.append(DNA_block_dGr_ss)
         #DNA_block_totdGr += DNA_block_dGr
 
@@ -508,28 +523,28 @@ for T in TK:
             """G.5 - Formation and reaction energy of the transcriptome by blocks"""
 
             """Gibbs Formation energy"""
-            RNA_block_dGf_chain = RNA_sigmaB + RNA_phosba
-            RNA_block_dGf.append(RNA_block_dGf_chain)
+            RNA_dGf_byblock = RNA_sigmaB + (RNA_phosba - dGf_OH)
+            RNA_block_dGf.append(RNA_dGf_byblock)
 
             """Gibbs reaction energy"""
-            RNA_block_dGr_chain= ((((RNA_Nn-1)*(2*dGf_H2O)) + RNA_block_dGf_chain) - RNA_sigmaNion)
-            RNA_block_dGr.append(RNA_block_dGr_chain)
+            RNA_dGr_byblock= ((Nn*dGf_H2O) + RNA_dGf_byblock) - RNA_sigmaN
+            RNA_block_dGr.append(RNA_dGr_byblock)
 
 
     """-L-"""
     #get average values for molecular weight and lenght
     RNA_nucleotide_avmw= 339.5 #Da
     messenger_meanlenght= transcriptome_lenght/len(transcripts) #Average lenght of the strands
-    avm= transcriptome_totweight/len(transcripts) #average gene size in Daltons
+    avm= transcriptome_totweight/len(transcripts) #average gene weight in Daltons
     # same technique for concentrations as DNA
     host_volume= 1 #um3
     # To get the moles
     if celltype == "bacteria":
-        RNA_conc_Da_ml = 2.3/(1.66054e-21) # 1.66054e-21 is the conversion Da-mg
+        RNA_conc_Da_ml = 100/(1.66054e-21) # 1.66054e-21 is the conversion Da-mg
     elif celltype == "mammalian":
-        RNA_conc_Da_ml = 0.3/(1.66054e-21)
+        RNA_conc_Da_ml = 10/(1.66054e-21)
     elif celltype == "yeast":
-        RNA_conc_Da_ml = 0.65/(1.66054e-21)
+        RNA_conc_Da_ml = 13/(1.66054e-21)
 
     RNA_conc_molecules_ml = RNA_conc_Da_ml / avm #number molecules per ml
     RNA_mol_ml = RNA_conc_molecules_ml/6.022e23
@@ -706,23 +721,24 @@ plt.tight_layout()
 plt.show()
 
 print(' ')
-byblockresults=input('Do you want to print the results for the by block calculaitons? [y/n]')
-if byblockresults == 'y':
-    """DNA"""
-    print(' ')
-    print('The energy required for this DNA sequence and the transcripts at',stemperature, 'K by block is:')
-    print(' ')
-    print('Genome')
-    print('Average formation Gibbs energy of the genes:', "%.3f" % DNA_block_dGf_av[selected_temp], 'KJ/mol')
-    print('Average reaction Gibbs energy of the genes:', "%.2f" % DNA_block_dGr_av[selected_temp], 'KJ/mol')
-    print('Average molar energy of the genome by block:', "%.2f" % DNA_block_ReactionGibbs[selected_temp], 'KJ/g')
-    print(' ')
-    """RNA"""
-    print('Transcriptome')
-    print('Average formation Gibbs energy of the transcripts:', "%.2f" % RNA_block_dGf_av[selected_temp], 'KJ/mol')
-    print('Average reaction Gibbs energy of the transcripts:', "%.2f" % RNA_block_dGr_av[selected_temp], 'KJ/mol')
-    print('Molar energy of the transcriptome by block:', "%.2f" % RNA_block_ReactionGibbs[selected_temp], 'KJ/g')
-    print(' ')
+if temp == 'yes':
+    byblockresults=input('Do you want to print the results for the by block calculaitons? [y/n]')
+    if byblockresults == 'y':
+        """DNA"""
+        print(' ')
+        print('The energy required for this DNA sequence and the transcripts at',stemperature, 'K by block is:')
+        print(' ')
+        print('Genome')
+        print('Average formation Gibbs energy of the genes:', "%.3f" % DNA_block_dGf_av[selected_temp], 'KJ/mol')
+        print('Average reaction Gibbs energy of the genes:', "%.2f" % DNA_block_dGr_av[selected_temp], 'KJ/mol')
+        print('Average molar energy of the genome by block:', "%.2f" % DNA_block_ReactionGibbs[selected_temp], 'KJ/g')
+        print(' ')
+        """RNA"""
+        print('Transcriptome')
+        print('Average formation Gibbs energy of the transcripts:', "%.2f" % RNA_block_dGf_av[selected_temp], 'KJ/mol')
+        print('Average reaction Gibbs energy of the transcripts:', "%.2f" % RNA_block_dGr_av[selected_temp], 'KJ/mol')
+        print('Molar energy of the transcriptome by block:', "%.2f" % RNA_block_ReactionGibbs[selected_temp], 'KJ/g')
+        print(' ')
 
 
 
