@@ -340,6 +340,23 @@ for T in progressbar.progressbar(TK, widgets=widgets):
     #----------------------------------F. Number of proteins per type of cell (estimation)----------------------------
     #As proposed by Milo R. Insights & Perspectives (2013)
     # Protein density = cell density (1.1 g/mL) * Water content * protein fraction of dry mass
+    protein_avmw= totmw/len(proteins)
+    '''By grams'''
+    if celltype == "bacteria":
+        prot_grams= 1.57E-13 #g
+        cell_moles = prot_grams/protein_avmw #mol
+        cell_volume= 1e-15 #L
+    if celltype == "yeast":
+        prot_grams= 9.75E-12 #g
+        cell_moles = prot_grams/protein_avmw #mol
+        cell_volume= 1.1e-13 #L
+    if celltype == "mammalian":
+        prot_grams= 3.15E-10 #g
+        cell_moles = prot_grams/protein_avmw #mol
+        cell_volume= 3E-12 #L
+
+    prot_mol_Lit= cell_moles/cell_volume
+
     # p𝑐= 𝐶𝑑 ∗ 𝑤 ∗ 𝑃𝑓
     #For E. coli / bacteria
     pdbacteria= (1.1)*(1-0.7)*(0.55)
@@ -395,7 +412,8 @@ for T in progressbar.progressbar(TK, widgets=widgets):
         proteome_weight = number_prot * avP #Total weight of the proteome in Da
 
     #--------------------------------------------------------H. For the molal Gibbs Free Energy (Neutral Charge)-----------------------------------
-    PC = mol_L
+    #PC = mol_L
+    PC= prot_mol_Lit
 
     #make a list of the free energies for each protein
     reactionGs_neu = []
@@ -456,6 +474,12 @@ for T in progressbar.progressbar(TK, widgets=widgets):
     dGf_neu_av.append(statistics.mean(dGfs_neu))
     dGr_neu_av.append(statistics.mean(proteinGs_neu))
 
+print('amino acid R groups and energy')
+print('AABB' ,' ', _AABB.stdbio_formation_gibbs)
+print('PBB' ,' ', _PBB.stdbio_formation_gibbs)
+
+
+
 if temp == 'yes':
     print('--------These are the theoretical values:--------------------------------')
     print(' ')
@@ -487,9 +511,10 @@ elif celltype == "mammalian":
     plt.title('Molar Gibbs Energy calculated at two conditions for a mammalian cell')
 elif celltype == "yeast":
     plt.title('Molar Gibbs Energy calculated at two conditions for a yeast cell')
-
-ax.plot(TK, ReactionGibbs_neu, label='Proteome energy using standard energies', c='g', linewidth=3)
-ax.plot(TK, ReactionGibbs_chr, label='Proteome energy using biological standard energies', c='r', linewidth=3)
+
+
+ax.plot(TK, ReactionGibbs_neu, label='Proteome energy using standard energies', color='lawngreen', marker='v', linewidth=3)
+ax.plot(TK, ReactionGibbs_chr, label='Proteome energy using biological standard energies', color='steelblue', marker='^', linewidth=2)
 
 ax.set_ylabel(r'Energetic cost [kJ per dry g]', fontsize=14)
 ax.set_xlabel('Temperature [K]', fontsize=14)
