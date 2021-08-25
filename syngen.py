@@ -189,6 +189,10 @@ RNA_block_ReactionGibbs = []
 RNA_NS_dGf_av=[]
 RNA_NS_dGr_av=[]
 RNA_NS_ReactionGibbs=[]
+#Membrane
+membrane_dGf=[]
+membrane_dGr=[]
+
 
 
 for T in TK:
@@ -947,9 +951,6 @@ for T in TK:
     """------------------------------"""
     """Membrane and cell walls"""
 
-    membrane_dGf=[]
-    membrane_dGr=[]
-
     POPC_w= 760.091 #g/mol
 
     if celltype == "bacteria":
@@ -980,6 +981,8 @@ for T in TK:
     membrane_dGr_chain = (membrane+(membrane_number*(ADP+(H2O*14)+(CO2*24)))) - (membrane_number*((glucose*5)+serine+ATP+(pyruvate*10)+malonate))
     membrane_dGr.append(membrane_dGr_chain)
 
+
+
     M_PC = membrane_mol_Lit
 
     membrane_lnQ = math.log(M_PC/membrane_number)
@@ -991,11 +994,8 @@ for T in TK:
         membrane_lnQ -= math.log(6.75E-04) +  math.log(4.86E-03) + math.log(4.67E-03) + math.log(5.88E-03) + math.log(7.26E-05)
 
     membrane_reactionGs=(membrane_dGr+(R*(T)*membrane_lnQ))
-    membrane_ReactionGibbs = membrane_reactionGs * (1/POPC_w)
-    print('membrane_ReactionGibbs',membrane_ReactionGibbs,'KJ/g')
-    print('DNA_ReactionGibbs',DNA_ReactionGibbs,'KJ/g')
-
-
+    membrane_ReactionGibbs = membrane_reactionGs * (1/(POPC_w*membrane_number))
+print('membrane_dGr',membrane_dGr)
 
 
 """-O-"""
@@ -1023,6 +1023,13 @@ if temp == 'yes':
     print('Molar energy of the transcriptome by block:', "%.3f" % RNA_block_ReactionGibbs[selected_temp], 'KJ/g')
     print('Molar energy of the transcriptome by block 2:', "%.3f" % RNA_NS_ReactionGibbs[selected_temp], 'KJ/g')
     print('Molar energy of a single cell genome:', RNA_ReactionGibbs_t[selected_temp], 'KJ/g')
+
+    print(' ')
+    """Membrane"""
+    print('Membrane')
+    print('Average formation Gibbs energy of the membrane and cell walls:', "%.3f" % membrane_dGf[selected_temp], 'KJ/mol')
+    print('Average reaction Gibbs energy of the tmembrane and cell walls:', "%.3f" %membrane_dGr[selected_temp], 'KJ/mol')
+    print('Molar energy of the membrane and cell walls:', "%.3f" % membrane_ReactionGibbs[selected_temp], 'KJ/g')
 
 
 
@@ -1151,23 +1158,23 @@ plt.tight_layout()
 plt.show()
 
 #--- Membrane ----
-#fig = plt.figure(figsize = (7,5))
-#ax= fig.add_subplot(111)
+fig = plt.figure(figsize = (7,5))
+ax= fig.add_subplot(111)
 
-#if celltype == "bacteria":
-#    plt.title('Molar Gibbs Energy for a bacteria genome with three methods')
-#elif celltype == "mammalian":
-#    plt.title('Molar Gibbs Energy for a mammalian genome with three methods')
-#elif celltype == "yeast":
-#    plt.title('Molar Gibbs Energy for a yeast genome with three methods')
+if celltype == "bacteria":
+    plt.title('Molar Gibbs Energy for a bacteria genome with three methods')
+elif celltype == "mammalian":
+    plt.title('Molar Gibbs Energy for a mammalian genome with three methods')
+elif celltype == "yeast":
+    plt.title('Molar Gibbs Energy for a yeast genome with three methods')
 
-#ax.plot(TK,membrane_ReactionGibbs, label='membrane energy', color='red', marker='v', linewidth=2)
+ax.plot(TK,membrane_ReactionGibbs, label='membrane energy', color='red', marker='v', linewidth=2)
 
-#ax.set_ylabel(r'Energetic cost [KJ per gram]', fontsize=14)
-#ax.set_xlabel('Temperature [K]', fontsize=14)
-#ax.tick_params(axis='both', which='major', labelsize=14)
+ax.set_ylabel(r'Energetic cost [KJ per gram]', fontsize=14)
+ax.set_xlabel('Temperature [K]', fontsize=14)
+ax.tick_params(axis='both', which='major', labelsize=14)
 
-#ax.set_xlim(270, 400)
-#plt.legend(fontsize=14)
-#plt.tight_layout()
-#plt.show()
+ax.set_xlim(270, 400)
+plt.legend(fontsize=14)
+plt.tight_layout()
+plt.show()
