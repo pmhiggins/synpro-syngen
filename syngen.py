@@ -204,7 +204,6 @@ for T in TK:
 
     #miscelaneous
     _Water = BioMolecule('H2O(l)', 18, 2, T=T)
-    H2O = _Water.stdbio_formation_gibbs
     _H2 = BioMolecule('H2(g)', 2.01, 2, T=T)
     _NH4 = BioMolecule('NH4+', 18.03, 4, T=T, z=1)
 
@@ -219,7 +218,7 @@ for T in TK:
     #RNA nucleoside
     _AS = BioMolecule('Adenosine(aq)', 267.24132, 13, T=T)
     #DNA Nucleotide
-    #_dAMP = BioMolecule('d+H2AMP-(aq)', 300.24806, 14, T=T)
+    _dAMP2 = BioMolecule('d+H2AMP-(aq)', 300.24806, 14, T=T)
     _dAMP = BioMolecule('dHAMP-', 330.213881, 13, T=T, z=-1)
     #ion
     _dAMPion = BioMolecule('dAMP2-', 329.205941, 12, T=T, z=-2)
@@ -294,6 +293,7 @@ for T in TK:
     # sugars
     _rib = BioMolecule('Ribose(aq)', 150.1299, 10, T=T)
     _drib = BioMolecule('Deoxyribose(aq)', 134.1305, 10, T=T)
+    _R5P = BioMolecule('Ribose-5-Phosphate-2', 228.093921, 9, T=T, z=-2)
 
     # Phosphates
     _H2PO4 = BioMolecule('H2PO4-', 96.987241, 2, T=T, z=-1)
@@ -326,10 +326,12 @@ for T in TK:
     serine= _C3H7NO3.stdbio_formation_gibbs
     O2= _O2.stdbio_formation_gibbs
     CO2= _CO2.stdbio_formation_gibbs
+    H2O = _Water.stdbio_formation_gibbs
     PO4= _PO4.stdbio_formation_gibbs
     H2PO4= _H2PO4.stdbio_formation_gibbs
     Phosphate= _HPO4.stdbio_formation_gibbs
     malonate= _C3H2O4.std_formation_gibbs
+    dGf_R5P= _R5P.std_formation_gibbs
 
     #Group contribution
     #Molecules or functional groups
@@ -344,6 +346,7 @@ for T in TK:
     dGf_PhdB= 22.175 # (Reversed) Phosphodiester bond At 25 °C, pH 7  Dickson K. 2000
     #dGf_PhdB= 103.76 # Phosphodiester bond At 65 °C, pH 8 (Hydrolysis) Molina R. 2015
     ester_bond= _P2O7.stdbio_formation_gibbs - ((2*_HPO4.stdbio_formation_gibbs) - H2O)
+    e_bond= (_rib.stdbio_formation_gibbs + Phosphate) - (dGf_R5P - H2O)
     glyco_bond= _dAS.stdbio_formation_gibbs - ((_A.stdbio_formation_gibbs + _drib.stdbio_formation_gibbs)- H2O)
     hydro_bond= dGf_OH - _Water.stdbio_formation_gibbs
     Hbond=  (dGf_OH + hydrogen) - _Water.stdbio_formation_gibbs
@@ -352,6 +355,8 @@ for T in TK:
     #Nucleotides or nucleosides
     damp= (_HPO4.stdbio_formation_gibbs + ester_bond + _drib.stdbio_formation_gibbs + glyco_bond + _A.stdbio_formation_gibbs) - (2*H2O)
     NuSi= (_HPO4.stdbio_formation_gibbs + ester_bond + _dAS.stdbio_formation_gibbs) - (H2O)
+    _dAMP_dGf= _dAMP.stdbio_formation_gibbs
+
 
     #Backbones
     #DNA phosphate backbone = Phosphate + ester bond + Deoxyribose
@@ -375,6 +380,70 @@ for T in TK:
 
     #Phospholipids
     POPC= (((glucose*5) + (serine*1) + (ATP*1) + (pyruvate*10) + (malonate*1)) - ((ADP*1) + (H2O*14) + (CO2*24)))
+
+    damp= (_HPO4.stdbio_formation_gibbs + ester_bond + _drib.stdbio_formation_gibbs + glyco_bond + _A.stdbio_formation_gibbs) - (2*H2O)
+    NuSi= (_HPO4.stdbio_formation_gibbs + ester_bond + _dAS.stdbio_formation_gibbs) - (H2O)
+    print('damp by block method (H12)',damp,'KJ/mol')
+    print('damp by lock method 2 (H12)',NuSi,'KJ/mol')
+    print('dAMPion (database) (H12)',(_dAMPion.stdbio_formation_gibbs),'KJ/mol')
+    print('dAMP (database) (H13)',(_dAMP.stdbio_formation_gibbs),'KJ/mol')
+    print('dAMP2 (database)(H14)',(_dAMP2.stdbio_formation_gibbs),'KJ/mol')
+
+
+    print('Phosphate backbone')
+    print('_PO4',_PO4.stdbio_formation_gibbs,'KJ/mol')
+    print('Deoxyribose',_drib.stdbio_formation_gibbs,'KJ/mol')
+    print('ribose',_rib.stdbio_formation_gibbs,'KJ/mol')
+    print(' ')
+
+    print('Bases')
+    print('Adenine',_A.stdbio_formation_gibbs,'KJ/mol')
+    print('Cytosine',_C.stdbio_formation_gibbs,'KJ/mol')
+    print('Guanine',_G.stdbio_formation_gibbs,'KJ/mol')
+    print('Thymine',_T.stdbio_formation_gibbs,'KJ/mol')
+    print('Uracil',_U.stdbio_formation_gibbs,'KJ/mol')
+    print(' ')
+
+
+    print('DNA nucleosides')
+    print('Deoxyadenosine',_dAS.stdbio_formation_gibbs,'KJ/mol')
+    print('Deoxycytidine',_dCS.stdbio_formation_gibbs,'KJ/mol')
+    print('Deoxyguanosine',_dGS.stdbio_formation_gibbs,'KJ/mol')
+    print('Deoxythymidine',_dTS.stdbio_formation_gibbs,'KJ/mol')
+    print(' ')
+
+    print('RNA nucleosides')
+    print('adenosine',_AS.stdbio_formation_gibbs,'KJ/mol')
+    print('cytidine',_CS.stdbio_formation_gibbs,'KJ/mol')
+    print('guanosine',_GS.stdbio_formation_gibbs,'KJ/mol')
+    print('Uradine',_US.stdbio_formation_gibbs,'KJ/mol')
+    print(' ')
+
+    print('DNA nucleotides')
+    print('dAMP',_dAMP.stdbio_formation_gibbs,'KJ/mol')
+    print('dCMP',_dCMP.stdbio_formation_gibbs,'KJ/mol')
+    print('dGMP',_dGMP.stdbio_formation_gibbs,'KJ/mol')
+    print('dTMP',_dTMP.stdbio_formation_gibbs,'KJ/mol')
+    print(' ')
+
+    print('RNA nucleotides')
+    print('AMP',_AMP.stdbio_formation_gibbs,'KJ/mol')
+    print('CMP',_CMP.stdbio_formation_gibbs,'KJ/mol')
+    print('GMP',_GMP.stdbio_formation_gibbs,'KJ/mol')
+    print('UMP',_UMP.stdbio_formation_gibbs,'KJ/mol')
+    print(' ')
+
+    print('Metabolites')
+    print('Glucose',glucose,'KJ/mol')
+    print('ATP',ATP,'KJ/mol')
+    print('ADP',ADP,'KJ/mol')
+    print('Glutamine',glutamine,'KJ/mol')
+    print('O2',O2,'KJ/mol')
+    print('CO2',CO2,'KJ/mol')
+    print('glucose_6_p',glucose_6_p,'KJ/mol')
+    print('P from ATP',(ATP - ADP), 'KJ/mol')
+
+
 
 
 
@@ -576,10 +645,12 @@ for T in TK:
 
         """G.7 - Oxic method"""
         """Gibbs Reaction Energy"""
-        DNA_dGf_oxic = ((Nn-1)*(ester_bond - dGf_OH)) + ((Nn)*((H2O*7)+(ADP*0.4)+(CO2*3.2)))
+        #DNA_dGf_oxic = ((Nn-1)*(ester_bond - dGf_OH)) + ((glucose_6_p*0.5)+(ATP*0.5)+(glutamine*2.5)+(O2*6.5))
+        DNA_dGf_oxic = ((Nn-1)*(ester_bond - dGf_OH)) + sigmaNion
         DNA_oxic_dGf.append(DNA_dGf_chain)
 
-        DNA_dGr_oxic = (((Nn-1)*H2O) + DNA_dGf_chain) - ((Nn)*((glucose_6_p*0.2)+(ATP*0.4)+(glutamine*2)+(O2*4.2))-((H2O*7)+(ADP*0.2)+(CO2*3.2)))
+        DNA_dGr_oxic = (((Nn-1)*H2O) + DNA_dGf_oxic + (Nn*(((glucose_6_p*0.5)+(ATP*0.5)+(glutamine*2.5)+(O2*6.5))-((ADP*0.5)+(H2O*9)+(CO2*5.5))))) - sigmaN
+        #DNA_dGr_oxic = (((Nn-1)*H2O) + DNA_dGf_oxic + ((Nn)*((H2O*9)+(ADP*0.5)+(CO2*5.5)))) - sigmaN
         DNA_oxic_dGr.append(DNA_dGr_oxic)
 
 
@@ -995,7 +1066,6 @@ for T in TK:
 
     membrane_reactionGs=(membrane_dGr+(R*(T)*membrane_lnQ))
     membrane_ReactionGibbs = membrane_reactionGs * (1/(POPC_w*membrane_number))
-print('membrane_dGr',membrane_dGr)
 
 
 """-O-"""
@@ -1005,9 +1075,12 @@ if temp == 'yes':
     print('The energy required for this DNA sequence and the transcripts at',stemperature, 'K is:')
     print(' ')
     print('Genome')
-    print('Average formation Gibbs energy of the genes:', "%.3f" % DNA_dGf_av[selected_temp], 'KJ/mol')
-    print('Average reaction Gibbs energy of the genes:', "%.3f" % DNA_dGr_av[selected_temp], 'KJ/mol')
-    print('Average molar energy of the genome:', "%.3f" % DNA_ReactionGibbs[selected_temp], 'KJ/g')
+    print('Formation energy')
+    print('Average formation Gibbs energy of the genes using chain method:', "%.3f" % DNA_dGf_av[selected_temp], 'KJ/mol')
+    print('Reaction energy')
+    print('Average reaction Gibbs energy of the genes using chain method:', "%.3f" % DNA_dGr_av[selected_temp], 'KJ/mol')
+    print('Molar energies')
+    print('Average molar energy of the genome (chain method):', "%.3f" % DNA_ReactionGibbs[selected_temp], 'KJ/g')
     print('Average molar energy of the genome by block:', "%.3f" % DNA_block_ReactionGibbs[selected_temp], 'KJ/g')
     print('Average molar energy of the genome by block 2:', "%.3f" % DNA_NS_ReactionGibbs[selected_temp], 'KJ/g')
     print('Average molar energy oxic conditions', "%.3f" % DNA_oxic_ReactionGibbs[selected_temp], 'KJ/g')
@@ -1017,9 +1090,12 @@ if temp == 'yes':
     print(' ')
     """RNA"""
     print('Transcriptome')
-    print('Average formation Gibbs energy of the transcripts:', "%.3f" % RNA_dGf_av[selected_temp], 'KJ/mol')
-    print('Average reaction Gibbs energy of the transcripts:', "%.3f" % RNA_dGr_av[selected_temp], 'KJ/mol')
-    print('Molar energy of the transcriptome:', "%.3f" % RNA_ReactionGibbs[selected_temp], 'KJ/g')
+    print('Formation energy')
+    print('Average formation Gibbs energy of the transcripts using chain method:', "%.3f" % RNA_dGf_av[selected_temp], 'KJ/mol')
+    print('Reaction energy')
+    print('Average reaction Gibbs energy of the transcripts using chain method:', "%.3f" % RNA_dGr_av[selected_temp], 'KJ/mol')
+    print('Molar energies')
+    print('Molar energy of the transcriptome (chain method):', "%.3f" % RNA_ReactionGibbs[selected_temp], 'KJ/g')
     print('Molar energy of the transcriptome by block:', "%.3f" % RNA_block_ReactionGibbs[selected_temp], 'KJ/g')
     print('Molar energy of the transcriptome by block 2:', "%.3f" % RNA_NS_ReactionGibbs[selected_temp], 'KJ/g')
     print('Molar energy of a single cell genome:', RNA_ReactionGibbs_t[selected_temp], 'KJ/g')
@@ -1027,8 +1103,11 @@ if temp == 'yes':
     print(' ')
     """Membrane"""
     print('Membrane')
+    print('Formation energy')
     print('Average formation Gibbs energy of the membrane and cell walls:', "%.3f" % membrane_dGf[selected_temp], 'KJ/mol')
+    print('Reaction energy')
     print('Average reaction Gibbs energy of the tmembrane and cell walls:', "%.3f" %membrane_dGr[selected_temp], 'KJ/mol')
+    print('Molar energy')
     print('Molar energy of the membrane and cell walls:', "%.3f" % membrane_ReactionGibbs[selected_temp], 'KJ/g')
 
 
@@ -1105,7 +1184,7 @@ plt.legend(fontsize=14)
 plt.tight_layout()
 plt.show()
 
-#---Chain energy ----
+#---Chain energy DNA + RNA ----
 fig = plt.figure(figsize = (7,5))
 ax= fig.add_subplot(111)
 
@@ -1141,10 +1220,10 @@ elif celltype == "mammalian":
 elif celltype == "yeast":
     plt.title('Molar Gibbs Energy of the genome and transcriptome for a yeast cell')
 
-ax.plot(TK,DNA_ReactionGibbs, label='Genome Chain Energy', color='crimson', marker='1', linewidth=2)
-ax.plot(TK,DNA_oxic_ReactionGibbs, label='Genome Chain Energy at oxic conditions', color='gold', marker='1', linewidth=2)
+ax.plot(TK,DNA_oxic_ReactionGibbs, label='Genome Chain Energy from metabolites', color='gold', marker='1', linewidth=2)
 ax.plot(TK,DNA_block_ReactionGibbs, label='Genome block 1 energy', color='deepskyblue', marker='d', linewidth=2)
 ax.plot(TK,DNA_NS_ReactionGibbs, label='Genome block 2 energy', color='darkviolet', marker='o', linewidth=2)
+ax.plot(TK,DNA_ReactionGibbs, label='Genome Chain Energy', color='crimson', marker='1', linewidth=2)
 
 ax.plot(TK,DNA_ReactionGibbs_t, label='SC Genome Chain Energy', color='orange', marker='^', linewidth=2)
 
