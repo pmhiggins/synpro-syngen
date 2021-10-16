@@ -4,8 +4,7 @@
 
 This repository is a work-in-progress, but check back for big updates soon!
 
-Syncell readme
-
+---------------------------------------------------------------------------------------------------------------------------
 Getting ready to use Syncell
 
 To run Syngen and Synpro contained in Syncell is necessary to install the reaktoro environment and the biopython, matplotlib, progressbar and tqdm packages in case you don't have them already.
