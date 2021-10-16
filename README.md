@@ -11,6 +11,7 @@ To run Syngen and Synpro contained in Syncell is necessary to install the reakto
 To do this simply follow the next steps:
 
 Reaktoro
+
   0. In the terminal choose the work carpet where the programs and your files are contained
   1. Instal miniconda from the following link https://docs.conda.io/en/latest/miniconda.html
   2. Download the 64-bit bash file
