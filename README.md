@@ -30,7 +30,3 @@ ProgressBar
 ProgressBar
   11. Finally, type: pip install tqdm
 
-
-Using Syncell
-  1. Type: pyhton syncell.py
-  2. type the name of the fasta files you want to use, one for proteins and one for nucleic acids
